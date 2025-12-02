@@ -2,11 +2,29 @@ import express from "express";
 import dotenv from "dotenv";
 
 import { generateCodeFile } from "./utils/generateFile.js";
+import DBConnection from "./config/db.js";
+import RedisConnection from "./config/redis.js";
 
 dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+async function InitializeConnection() {
+    console.log('Starting Connection!');
+    try {
+        await Promise.all([DBConnection(), RedisConnection()]);
+        console.log("Connection to Mongo, CloudinaryEstablished!");
+        app.listen(process.env.PORT, () => {
+            console.log(`Server listening on Port ${process.env.PORT}`);
+        });
+    } catch (error) {
+        console.error("CRITICAL: Initialization failed. Server did not start.");
+        console.error(error);
+        process.exit(1); 
+    }
+}
+InitializeConnection();
 
 app.get("/", (req, res) => {
   res.send("This is Anirudh using this port for online compiler backend!");

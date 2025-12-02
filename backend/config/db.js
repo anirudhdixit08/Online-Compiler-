@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export default async function DBConnection() {
   try {
-    console.log("DB Connection Starting");
+    console.log("DB Connection Starting with ");
     await mongoose.connect(process.env.MONGO_URI);
     console.log("DB Connection established");
   } catch (error) {
