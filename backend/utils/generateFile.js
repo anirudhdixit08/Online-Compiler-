@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 
 const dirTemp = path.join(process.cwd(), "temp");
 
@@ -22,7 +21,7 @@ function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export const generateCodeFile = async (format, content, jobId) => {
+export const generateCodeFile = (format, content, jobId) => {
   let filename;
   let fileContent = content;
 
@@ -52,5 +51,12 @@ export const generateCodeFile = async (format, content, jobId) => {
 
   const filePath = path.join(dirCodes, filename);
   fs.writeFileSync(filePath, fileContent);
+  return filePath;
+};
+
+export const generateInputFile =  (input, jobId) => {
+  const filename = `${jobId}.txt`;
+  const filePath = path.join(dirInputs, filename);
+  fs.writeFileSync(filePath, input);
   return filePath;
 };

@@ -1,9 +1,10 @@
 import express from "express";
 import dotenv from "dotenv";
 
-import { generateCodeFile } from "./utils/generateFile.js";
+import { generateCodeFile, generateInputFile } from "./utils/generateFile.js";
 import DBConnection from "./config/db.js";
 import RedisConnection from "./config/redis.js";
+import Job from "./models/jobModel.js";
 
 dotenv.config();
 const app = express();
@@ -11,37 +12,59 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 async function InitializeConnection() {
-    console.log('Starting Connection!');
-    try {
-        await Promise.all([DBConnection(), RedisConnection()]);
-        console.log("Connection to Mongo, CloudinaryEstablished!");
-        app.listen(process.env.PORT, () => {
-            console.log(`Server listening on Port ${process.env.PORT}`);
-        });
-    } catch (error) {
-        console.error("CRITICAL: Initialization failed. Server did not start.");
-        console.error(error);
-        process.exit(1); 
-    }
+  console.log("Starting Connection!");
+  try {
+    await Promise.all([DBConnection(), RedisConnection()]);
+    console.log("Connection to MongoDB and Redis Established!");
+    app.listen(process.env.PORT, () => {
+      console.log(`Server listening on Port ${process.env.PORT}`);
+    });
+  } catch (error) {
+    console.error("CRITICAL: Initialization failed. Server did not start.");
+    console.error(error);
+    process.exit(1);
+  }
 }
 
 InitializeConnection();
 
-app.get("/", (req, res) => {
-  res.send("This is Anirudh using this port for online compiler backend!");
-});
-
-app.post("/run", (req, res) => {
+app.post("/run", async (req, res) => {
   try {
-    const { language = "cpp", code } = req.body;
+    const { language = "cpp", code, input } = req.body;
     if (code === undefined) {
       return res.status(400).json({ success: false, error: "Empty code!" });
     }
-    res.status(201).json({ language, code });
+    try {
+      let job = await new Job({
+        language,
+        startedAt: new Date(),
+      }).save();
+
+      const jobId = job._id;
+      const filePath = generateCodeFile(language, code, jobId);
+
+      let inputFilePath;
+      if (input) {
+        inputFilePath = generateInputFile(input, jobId);
+      }
+
+      job.filePath = filePath;
+      job.inputFilePath = inputFilePath;
+      await job.save();
+
+      res.status(201).json({ success: true, jobId, language, code });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, error: error });
+    }
   } catch (error) {}
 });
 
 const PORT = process.env.PORT;
+app.get("/", (req, res) => {
+  res.send("This is Anirudh using this port for online compiler backend!");
+});
+
 app.listen(PORT, () => {
   console.log("Server is running on port ", PORT);
 });

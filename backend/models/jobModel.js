@@ -4,7 +4,7 @@ const JobSchema = mongoose.Schema({
   language: {
     type: String,
     required: true,
-    enum: ["cpp", "py","java","c","js"],
+    enum: ["cpp", "py", "java", "c", "js"],
   },
   filePath: {
     type: String,
@@ -32,4 +32,5 @@ const JobSchema = mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("job", JobSchema);
+const Job = mongoose.model("job", JobSchema);
+export default Job;
