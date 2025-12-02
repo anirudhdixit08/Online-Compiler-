@@ -24,6 +24,7 @@ async function InitializeConnection() {
         process.exit(1); 
     }
 }
+
 InitializeConnection();
 
 app.get("/", (req, res) => {
