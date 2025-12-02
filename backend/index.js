@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 
 import { generateCodeFile, generateInputFile } from "./utils/generateFile.js";
 import DBConnection from "./config/db.js";
-import RedisConnection from "./config/redis.js";
 import Job from "./models/jobModel.js";
 
 dotenv.config();
@@ -12,10 +11,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 async function InitializeConnection() {
-  console.log("Starting Connection!");
   try {
-    await Promise.all([DBConnection(), RedisConnection()]);
-    console.log("Connection to MongoDB and Redis Established!");
+    await DBConnection();
     app.listen(process.env.PORT, () => {
       console.log(`Server listening on Port ${process.env.PORT}`);
     });
