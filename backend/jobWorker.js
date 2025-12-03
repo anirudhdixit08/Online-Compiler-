@@ -1,7 +1,15 @@
-import connection from "./config/redis";
-import { Queue, Worker } from "bullmq";
+import connection from "./config/redis.js";
+import { Worker } from "bullmq";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import executeCpp from "./controllers/executeCpp.js";
+import Job from "./models/jobModel.js";
+import executeC from "./controllers/executeC.js";
+import executeJava from "./controllers/executeJava.js";
+import executeJs from "./controllers/executeJs.js";
+import executePy from "./controllers/executePy.js";
+import fs from "fs";
+import path from "path";
 dotenv.config();
 
 const connectDB = async () => {
@@ -16,9 +24,19 @@ const connectDB = async () => {
 
 connectDB();
 
+const outputPath = path.join(process.cwd(), "temp", "outputs");
+
 export const jobQueueName = "job-queue";
-export const jobQueue = new Queue(jobQueueName, { connection });
 const NUM_WORKERS = 5;
+
+const safeUnlink = async (p) => {
+  if (!p) return;
+  try {
+    fs.unlinkSync(p);
+  } catch (err) {
+    console.error("Job failed:", jobFind, error);
+  }
+};
 
 const worker = new Worker(
   jobQueueName,
@@ -29,6 +47,17 @@ const worker = new Worker(
       console.log("Job not found!");
       return;
     }
+
+    let outputFilePath;
+
+    if (jobFind.language === "java") {
+      const className = path.basename(jobFind.filePath).replace(".java", "");
+      outputFilePath = path.join(outputPath, `${className}.class`);
+    } else if (jobFind.language === "c" || jobFind.language === "cpp") {
+      outputFilePath = path.join(outputPath, `${jobId}.out`);
+    }
+
+    console.log("Output path : ", outputFilePath);
     console.log("Processing job with ID:", jobId);
     console.log("Fetched Job with input file path:", jobFind.inputFilePath);
 
@@ -67,6 +96,11 @@ const worker = new Worker(
       await jobFind.save();
       console.error("Job failed:", jobFind, error);
       throw error;
+    } finally {
+      safeUnlink(jobFind.filePath).catch(() => {});
+      if (jobFind.inputFilePath)
+        safeUnlink(jobFind.inputFilePath).catch(() => {});
+      safeUnlink(outputFilePath).catch(() => {});
     }
   },
   {
@@ -75,20 +109,9 @@ const worker = new Worker(
   }
 );
 worker.on("failed", (job, error) => {
-  console.error(`Job ID ${job.id} failed with reason:`, error.message);
+  console.error(`Job ID ${job.id} failed with reason:`, error.stderr);
 });
 
 worker.on("completed", (job) => {
   console.log(`Job ID ${job.id} completed`);
 });
-
-export const addJobToQueue = async (jobId, options = { timeout: 10000 }) => {
-  try {
-    await jobQueue.add("execute-code", { id: jobId }, options);
-    console.log(`Job with ID ${jobId} successfully added to the queue.`);
-  } catch (error) {
-    console.error(`Failed to add job with ID ${jobId} to the queue:`, error);
-  } finally {
-    console.log("Done with function addJobToQueue");
-  }
-};

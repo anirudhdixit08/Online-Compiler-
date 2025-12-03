@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 
 import { generateCodeFile, generateInputFile } from "./utils/generateFile.js";
+import addJobToQueue from "./jobQueue.js";
 import DBConnection from "./config/db.js";
 import Job from "./models/jobModel.js";
 
@@ -48,6 +49,13 @@ app.post("/run", async (req, res) => {
       job.filePath = filePath;
       job.inputFilePath = inputFilePath;
       await job.save();
+
+      addJobToQueue(jobId, {
+        delay: 1000,
+        removeOnComplete: true,
+        timeout: 60000,
+      });
+      console.log(`Job added to queue with ID: ${jobId}`);
 
       res.status(201).json({ success: true, jobId, language, code });
     } catch (error) {
