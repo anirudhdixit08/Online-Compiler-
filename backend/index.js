@@ -10,7 +10,14 @@ import cors from "cors";
 
 dotenv.config();
 const app = express();
-app.use(cors());
+
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -88,13 +95,10 @@ app.get("/status/:jobId", async (req, res) => {
 
 app.post("/ai-review", async (req, res) => {
   if (!req.body || req.body.code === undefined) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        error:
-          "Empty or invalid request body. Please provide a 'code' property.",
-      });
+    return res.status(400).json({
+      success: false,
+      error: "Empty or invalid request body. Please provide a 'code' property.",
+    });
   }
 
   const { code, language, input } = req.body;
