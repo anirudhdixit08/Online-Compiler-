@@ -2,9 +2,11 @@ import express from "express";
 import dotenv from "dotenv";
 
 import { generateCodeFile, generateInputFile } from "./utils/generateFile.js";
+import generateAiResponse from "./controllers/generateAiResponse.js";
 import addJobToQueue from "./jobQueue.js";
 import DBConnection from "./config/db.js";
 import Job from "./models/jobModel.js";
+import cors from "cors";
 
 dotenv.config();
 const app = express();
@@ -81,6 +83,33 @@ app.get("/status/:jobId", async (req, res) => {
     return res
       .status(500)
       .json({ success: false, error: JSON.stringify(error) });
+  }
+});
+
+app.post("/ai-review", async (req, res) => {
+  if (!req.body || req.body.code === undefined) {
+    return res
+      .status(400)
+      .json({
+        success: false,
+        error:
+          "Empty or invalid request body. Please provide a 'code' property.",
+      });
+  }
+
+  const { code, language, input } = req.body;
+  if (code === undefined) {
+    return res.status(404).json({ success: false, error: "Empty code!" });
+  }
+  try {
+    const aiResponse = await generateAiResponse(code);
+    res.status(200).json({ success: true, review: aiResponse });
+  } catch (error) {
+    console.log("Error in getting AI Review !");
+    return res.status(500).json({
+      success: false,
+      error: "An unexpected error occurred while getting the AI review.",
+    });
   }
 });
 

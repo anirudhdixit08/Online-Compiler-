@@ -1,6 +1,6 @@
 import { GoogleGenAI }  from "@google/genai";
 
-const dotenv = require("dotenv");
+import dotenv from 'dotenv';
 dotenv.config();
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API });
@@ -15,4 +15,4 @@ const generateAiResponse = async (code) => {
   return response.text;
 };
 
-module.exports = generateAiResponse;
+export default generateAiResponse;
