@@ -8,6 +8,7 @@ import Job from "./models/jobModel.js";
 
 dotenv.config();
 const app = express();
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -63,6 +64,24 @@ app.post("/run", async (req, res) => {
       res.status(500).json({ success: false, error: error });
     }
   } catch (error) {}
+});
+
+app.get("/status/:jobId", async (req, res) => {
+  const jobId = req.params.jobId;
+  if (!jobId) {
+    return res.status(400).json({ success: false, error: "Missing jobId!" });
+  }
+  try {
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ success: false, error: "Job not found." });
+    }
+    return res.status(200).json({ success: true, job });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, error: JSON.stringify(error) });
+  }
 });
 
 const PORT = process.env.PORT;
