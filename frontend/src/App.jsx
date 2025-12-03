@@ -122,7 +122,7 @@ function App() {
           `/status/${data.jobId}`
         );
 
-        // console.log(`Job ID: ${data.jobId}, Status: ${statusData.job.status}`);
+        console.log(`Job ID: ${data.jobId}, Status: ${statusData.job.status}`);
         setJobStatus(statusData.job.status);
 
         if (
