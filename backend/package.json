@@ -12,6 +12,7 @@
     "dev": "nodemon index.js"
   },
   "dependencies": {
+    "@google/genai": "^1.30.0",
     "bullmq": "^5.65.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
