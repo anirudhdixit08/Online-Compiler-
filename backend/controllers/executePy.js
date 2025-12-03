@@ -4,7 +4,7 @@ import fs from "fs";
 const executePy = (filePath, inputFilePath) => {
   return new Promise((resolve, reject) => {
     try {
-      console.log("Running Python file:", filePath);
+      // console.log("Running Python file:", filePath);
 
       const run = spawn("python3", [filePath], {
         shell: false,

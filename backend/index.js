@@ -65,11 +65,11 @@ app.post("/run", async (req, res) => {
         removeOnComplete: true,
         timeout: 60000,
       });
-      console.log(`Job added to queue with ID: ${jobId}`);
+      // console.log(`Job added to queue with ID: ${jobId}`);
 
       res.status(201).json({ success: true, jobId, language, code });
     } catch (error) {
-      console.log(error);
+      // console.error(error);
       res.status(500).json({ success: false, error: error });
     }
   } catch (error) {}
@@ -109,7 +109,7 @@ app.post("/ai-review", async (req, res) => {
     const aiResponse = await generateAiResponse(code);
     res.status(200).json({ success: true, review: aiResponse });
   } catch (error) {
-    console.log("Error in getting AI Review !", error);
+    console.error("Error in getting AI Review !", error);
     return res.status(500).json({
       success: false,
       error: "An unexpected error occurred while getting the AI review.",
@@ -122,6 +122,6 @@ app.get("/", (req, res) => {
   res.send("This is Anirudh using this port for online compiler backend!");
 });
 
-app.listen(PORT, () => {
-  console.log("Server is running on port ", PORT);
-});
+// app.listen(PORT, () => {
+//   console.log("Server is running on Port ", PORT);
+// });

@@ -5,7 +5,7 @@ const executeJs = (filePath, inputFilePath) => {
   return new Promise((resolve, reject) => {
     try {
       setTimeout(() => {
-        console.log("Running JS file:", filePath);
+        // console.log("Running JS file:", filePath);
 
         const run = spawn("node", [filePath], { shell: false });
 

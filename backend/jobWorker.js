@@ -44,7 +44,7 @@ const worker = new Worker(
     const { id: jobId } = job.data;
     const jobFind = await Job.findById(jobId);
     if (!jobFind) {
-      console.log("Job not found!");
+      // console.log("Job not found!");
       return;
     }
 
@@ -57,9 +57,9 @@ const worker = new Worker(
       outputFilePath = path.join(outputPath, `${jobId}.out`);
     }
 
-    console.log("Output path : ", outputFilePath);
-    console.log("Processing job with ID:", jobId);
-    console.log("Fetched Job with input file path:", jobFind.inputFilePath);
+    // console.log("Output path : ", outputFilePath);
+    // console.log("Processing job with ID:", jobId);
+    // console.log("Fetched Job with input file path:", jobFind.inputFilePath);
 
     try {
       let output;
@@ -88,7 +88,7 @@ const worker = new Worker(
       jobFind.status = "success";
       jobFind.output = output;
       await jobFind.save();
-      console.log("Job completed successfully:", jobFind);
+      // console.log("Job completed successfully:", jobFind);
     } catch (error) {
       jobFind.completedAt = new Date();
       jobFind.status = "error";
@@ -112,6 +112,6 @@ worker.on("failed", (job, error) => {
   console.error(`Job ID ${job.id} failed with reason:`, error.stderr);
 });
 
-worker.on("completed", (job) => {
-  console.log(`Job ID ${job.id} completed`);
-});
+// worker.on("completed", (job) => {
+// console.log(`Job ID ${job.id} completed`);
+// });

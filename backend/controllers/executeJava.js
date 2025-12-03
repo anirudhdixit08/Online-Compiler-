@@ -12,7 +12,7 @@ const executeJava = (filePath, inputFilePath) => {
       const fileName = path.basename(filePath);
       const className = fileName.replace(".java", "");
 
-      console.log("Compiling Java:", className);
+      // console.log("Compiling Java:", className);
 
       const compile = spawn("javac", [filePath, "-d", dirOutputs], {
         shell: false,

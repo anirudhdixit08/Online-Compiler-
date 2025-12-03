@@ -10,7 +10,7 @@ const executeC = (filePath, inputFilePath) => {
 
   return new Promise((resolve, reject) => {
     try {
-      console.log("Compiling (C):", filePath);
+      // console.log("Compiling (C):", filePath);
 
       const compile = spawn("gcc", [
         "-std=c11",

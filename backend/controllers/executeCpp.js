@@ -10,7 +10,7 @@ const executeCpp = (filePath, inputFilePath) => {
 
   return new Promise((resolve, reject) => {
     try {
-      console.log("Compiling:", filePath);
+      // console.log("Compiling:", filePath);
 
       const compile = spawn("g++", [
         "-std=c++17",
