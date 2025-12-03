@@ -109,7 +109,7 @@ app.post("/ai-review", async (req, res) => {
     const aiResponse = await generateAiResponse(code);
     res.status(200).json({ success: true, review: aiResponse });
   } catch (error) {
-    console.log("Error in getting AI Review !");
+    console.log("Error in getting AI Review !", error);
     return res.status(500).json({
       success: false,
       error: "An unexpected error occurred while getting the AI review.",
