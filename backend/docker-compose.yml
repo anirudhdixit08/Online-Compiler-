@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: compiler-api
+    restart: always
+    ports:
+      - "8000:8000"  
+    environment:
+      - PORT=8000
+      - MONGO_URI=${MONGO_URI}
+      - REDIS_HOST=redis
+      - GOOGLE_GEMINI_API=${GOOGLE_GEMINI_API}
+      - GENAI_MODEL=${GENAI_MODEL}
+    volumes:
+      - ./temp:/app/temp
+    depends_on:
+      - redis
+
+  worker:
+    build: .
+    container_name: compiler-worker
+    restart: always
+    command: npm run start:worker
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - REDIS_HOST=redis
+    volumes:
+      - ./temp:/app/temp
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: compiler-redis
+    restart: always

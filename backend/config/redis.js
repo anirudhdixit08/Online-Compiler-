@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 const connection = {
-  url: process.env.REDIS_URL,
+  url: process.env.REDIS_HOST || "127.0.0.1",
   PORT: 6379,
 };
 
