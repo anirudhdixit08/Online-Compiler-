@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   api:
-    build: .
+    build: 
+      context: .          
+      dockerfile: Dockerfile.api   
     container_name: compiler-api
     restart: always
     ports:
@@ -19,12 +21,15 @@ services:
       - redis
 
   worker:
-    build: .
+    build: 
+      context: .       
+      dockerfile: Dockerfile.worker 
     container_name: compiler-worker
     restart: always
     command: npm run start:worker
     environment:
       - MONGO_URI=${MONGO_URI}
+      - GOOGLE_GEMINI_API=${GOOGLE_GEMINI_API}
       - REDIS_HOST=redis
     volumes:
       - ./temp:/app/temp
