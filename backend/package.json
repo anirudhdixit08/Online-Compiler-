@@ -10,7 +10,8 @@
   "test": "echo \"Error: no test specified\" && exit 1",
   "start": "node index.js",
   "start:worker": "node jobWorker.js",
-  "dev": "concurrently \"nodemon index.js\" \"nodemon jobWorker.js\""
+  "local": "concurrently \"node index.js\" \"node jobWorker.js\"",
+  "dev": "concurrently \"nodemon --ignore temp index.js\" \"nodemon --ignore temp jobWorker.js\""
 },
   "dependencies": {
     "@google/genai": "^1.30.0",

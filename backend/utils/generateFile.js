@@ -45,6 +45,8 @@ export const generateCodeFile = (format, content, jobId) => {
       `$1${newClassName}`
     );
     fileContent = updatedContent;
+  } else if (format === "js") {
+    filename = `${jobId}.cjs`;
   } else {
     filename = `${jobId}.${format}`;
   }

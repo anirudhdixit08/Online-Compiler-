@@ -12,7 +12,11 @@ services:
     environment:
       - PORT=8000
       - MONGO_URI=${MONGO_URI}
+      - MY_COMPILER_SECRET=${MY_COMPILER_SECRET}
       - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_USERNAME=${REDIS_USERNAME}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
       - GOOGLE_GEMINI_API=${GOOGLE_GEMINI_API}
       - GENAI_MODEL=${GENAI_MODEL}
     volumes:
@@ -31,6 +35,9 @@ services:
       - MONGO_URI=${MONGO_URI}
       - GOOGLE_GEMINI_API=${GOOGLE_GEMINI_API}
       - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_USERNAME=${REDIS_USERNAME}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     volumes:
       - ./temp:/app/temp
     depends_on:

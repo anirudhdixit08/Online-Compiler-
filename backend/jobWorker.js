@@ -10,7 +10,16 @@ import executeJs from "./controllers/executeJs.js";
 import executePy from "./controllers/executePy.js";
 import fs from "fs";
 import path from "path";
+import { normalizeOutput, stripAnsi } from "./judge0Compat.js";
 dotenv.config();
+
+process.on("unhandledRejection", (reason) => {
+  console.error("Worker unhandled promise rejection:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("Worker uncaught exception:", error);
+});
 
 const connectDB = async () => {
   try {
@@ -22,7 +31,7 @@ const connectDB = async () => {
   }
 };
 
-connectDB();
+await connectDB();
 
 const outputPath = path.join(process.cwd(), "temp", "outputs");
 
@@ -34,7 +43,7 @@ const safeUnlink = async (p) => {
   try {
     fs.unlinkSync(p);
   } catch (err) {
-    console.error("Job failed:", jobFind, error);
+    console.error(`Could not delete temp file ${p}:`, err.message);
   }
 };
 
@@ -49,6 +58,10 @@ const worker = new Worker(
     }
 
     let outputFilePath;
+    jobFind.status = "processing";
+    jobFind.statusId = 2;
+    jobFind.startedAt = new Date();
+    await jobFind.save();
 
     if (jobFind.language === "java") {
       const className = path.basename(jobFind.filePath).replace(".java", "");
@@ -62,6 +75,7 @@ const worker = new Worker(
     // console.log("Fetched Job with input file path:", jobFind.inputFilePath);
 
     try {
+      const startedAt = process.hrtime.bigint();
       let output;
 
       switch (jobFind.language) {
@@ -84,15 +98,47 @@ const worker = new Worker(
           throw new Error(`Unsupported language: ${jobFind.language}`);
       }
 
+      const endedAt = process.hrtime.bigint();
+      const elapsedSeconds = Number(endedAt - startedAt) / 1_000_000_000;
+      const expectedOutput =
+        jobFind.expectedOutput === undefined ? null : jobFind.expectedOutput;
+      const cleanOutput = stripAnsi(output);
+      const accepted =
+        expectedOutput === null ||
+        normalizeOutput(cleanOutput) === normalizeOutput(expectedOutput);
+
       jobFind.completedAt = new Date();
-      jobFind.status = "success";
-      jobFind.output = output;
+      jobFind.status = accepted ? "success" : "error";
+      jobFind.statusId = accepted ? 3 : 4;
+      jobFind.output = cleanOutput;
+      jobFind.stdout = cleanOutput || null;
+      jobFind.stderr = null;
+      jobFind.compileOutput = null;
+      jobFind.message = accepted ? null : "Wrong Answer";
+      jobFind.exitCode = 0;
+      jobFind.time = elapsedSeconds.toFixed(3);
+      jobFind.wallTime = elapsedSeconds.toFixed(3);
+      jobFind.memory = null;
       await jobFind.save();
       // console.log("Job completed successfully:", jobFind);
     } catch (error) {
       jobFind.completedAt = new Date();
       jobFind.status = "error";
-      jobFind.output = JSON.stringify(error);
+      jobFind.statusId = error?.error?.toLowerCase().includes("compilation")
+        ? 6
+        : 11;
+      jobFind.output = null;
+      jobFind.stdout = null;
+      jobFind.stderr =
+        jobFind.statusId === 6
+          ? null
+          : stripAnsi(error?.stderr || error?.message || "");
+      jobFind.compileOutput =
+        jobFind.statusId === 6
+          ? stripAnsi(error?.stderr || error?.message || "")
+          : null;
+      jobFind.message = error?.error || "Execution failed";
+      jobFind.exitCode = jobFind.statusId === 6 ? null : 1;
       await jobFind.save();
       console.error("Job failed:", jobFind, error);
       throw error;
@@ -109,7 +155,14 @@ const worker = new Worker(
   }
 );
 worker.on("failed", (job, error) => {
-  console.error(`Job ID ${job.id} failed with reason:`, error.stderr);
+  console.error(
+    `Job ID ${job?.id || "unknown"} failed with reason:`,
+    error?.stderr || error?.message || error
+  );
+});
+
+worker.on("error", (error) => {
+  console.error("Worker error:", error);
 });
 
 // worker.on("completed", (job) => {

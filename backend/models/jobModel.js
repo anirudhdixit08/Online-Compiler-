@@ -6,6 +6,18 @@ const JobSchema = mongoose.Schema({
     required: true,
     enum: ["cpp", "py", "java", "c", "js"],
   },
+  languageId: {
+    type: Number,
+  },
+  sourceCode: {
+    type: String,
+  },
+  stdin: {
+    type: String,
+  },
+  expectedOutput: {
+    type: String,
+  },
   filePath: {
     type: String,
   },
@@ -25,10 +37,41 @@ const JobSchema = mongoose.Schema({
   status: {
     type: String,
     default: "pending",
-    enum: ["pending", "success", "error"],
+    enum: ["pending", "processing", "success", "error"],
+  },
+  statusId: {
+    type: Number,
+    default: 1,
   },
   output: {
     type: String,
+  },
+  stdout: {
+    type: String,
+  },
+  stderr: {
+    type: String,
+  },
+  compileOutput: {
+    type: String,
+  },
+  message: {
+    type: String,
+  },
+  exitCode: {
+    type: Number,
+  },
+  exitSignal: {
+    type: Number,
+  },
+  time: {
+    type: String,
+  },
+  wallTime: {
+    type: String,
+  },
+  memory: {
+    type: Number,
   },
 });
 
